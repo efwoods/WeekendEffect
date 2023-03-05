@@ -1,0 +1,72 @@
+---
+output:
+  html_document: default
+  pdf_document: default
+---
+```{r}
+# Dependencies
+install.packages("quantmod")
+library(quantmod)
+```
+
+# Abstract:
+# The weekend effect is a phenomenon in financial markets in which stock returns on Mondays on average are often significantly lower than those of the immediately preceding Friday.
+
+# Results:
+
+# There is a statistically significant difference between the daily returns of the S&P 500 on Monday with respect to the following days of the week where Monday is statistically lower in price on average than other days of the week for the period of 1953 to 1977. This trend is present from the period of 1953 to 2022. However, the significance of this effect, while still statistically significant over this time period, is diminished with respect to the period from 1953 to 1977.
+
+# Upon closer examination, this trend is not significantly significant with respect to the recent time period of 2019 to 2022 despite the fact that the average stock prices on Monday are lower on average than the following days of the week. This suggests that the trend of the weekend effect was a phenomenon from 1953 to 1977, this trend has evanesced in recent years.
+
+```{r}
+# Function Definition:
+# Calculating a logistic regression to compare the average price of the S&P 500
+# during weekdays with respect to Monday for any arbitrary time period.
+# Input: date format is "YYYY-MM-DD" to "YYYY-MM-DD"
+# Output: logistic regression
+weekendEffect <- function(start_date, end_date){
+# Download S&P 500 Data from start_date to end_date
+  getSymbols("^GSPC", from=start_date, to= end_date)
+  rets <- dailyReturn(GSPC)
+  dadates = time(rets)
+  wdays = weekdays(as.Date(dadates,'%d-%m-%Y'))
+  
+# Create dummy variables for each day of the week
+  mon=1.0*(wdays=="Monday")
+  tues=1.0*(wdays=="Tuesday")
+  wed=1.0*(wdays=="Wednesday")
+  thur=1.0*(wdays=="Thursday")
+  fri=1.0*(wdays=="Friday")
+  
+# Return a logistic regression comparing the average price of the S&P 500 for 
+# days relative to Monday
+  fit <- lm(formula = rets~ tues + wed+ thur + fri)
+  
+  return(fit)
+}
+```
+
+```{r}
+# Weekend Effect from 1953 to 1977
+date.start <- "1953-01-01"
+date.end <- "1977-01-01"
+fit.1953_1977 <- weekendEffect(date.start, date.end)
+summary(fit.1953_1977)
+```
+
+```{r}
+# Weekend Effect from 1953 to 2022
+date.start <- "1953-01-01"
+date.end <- "2022-01-01"
+fit.1953_2022 <- weekendEffect(date.start, date.end)
+summary(fit.1953_2022)
+```
+
+```{r}
+# Weekend Effect from 2019 to 2020
+date.start <- "2019-01-01"
+date.end <- "2020-01-01"
+fit.2019_2022 <- weekendEffect(date.start, date.end)
+summary(fit.2019_2022)
+```
+
